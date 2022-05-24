@@ -9,4 +9,8 @@ aleksanderfigiel.pl/leczenie-lysienia-androgenowego
 
 feegioo.github.io
 
-feegloo.github.io => public
++ DNS changes (domeny.pl)
+
+TODO:
+
+feegloo.github.io => public (sharable link without mapping to aleksanderfigiel.pl)
