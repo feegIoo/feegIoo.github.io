@@ -96,7 +96,9 @@ function getEmbedPdf(clientIdAdobePdfEmbedAPI) {
   return function(fileName, parentElementSelector) {
     var parentElement = document.querySelector(parentElementSelector)
 
-    if (isMobile()) runAdobePdfEmbedAPI(clientIdAdobePdfEmbedAPI, fileName, parentElement)
-    else runNativeEmbedPdf(fileName, parentElement)
+    // if (isMobile()) runAdobePdfEmbedAPI(clientIdAdobePdfEmbedAPI, fileName, parentElement)
+    // else runNativeEmbedPdf(fileName, parentElement)
+
+    runNativeEmbedPdf(fileName, parentElement)
   }
 } 
