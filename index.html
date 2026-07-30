@@ -335,16 +335,19 @@
       const element = document.getElementById('google-rating');
       if (!element || !data || typeof data.rating !== 'number') return;
 
-      const rating = data.rating.toFixed(1).replace('.', ',');
+      const ratingNumber = data.rating;
+      const rating = ratingNumber.toFixed(1).replace('.', ',');
       const count = typeof data.count === 'number' ? data.count : null;
       const countMarkup = count === null ? '' : '<span class="gr-count">(' + count + ')</span>';
+      const fullStars = Math.max(0, Math.min(5, Math.round(ratingNumber)));
+      const stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
 
       element.setAttribute(
         'aria-label',
         'Ocena Google ' + rating + ' na 5' + (count === null ? '' : ', ' + count + ' opinii')
       );
       element.innerHTML =
-        '<span class="gr-stars" aria-hidden="true">★★★★★</span>' +
+        '<span class="gr-stars" aria-hidden="true">' + stars + '</span>' +
         '<span class="gr-value">' + rating + '</span>' +
         countMarkup;
     }
