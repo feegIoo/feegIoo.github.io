@@ -384,7 +384,11 @@
           savedAt: Date.now()
         };
 
-        localStorage.setItem(GOOGLE_RATING_CACHE_KEY, JSON.stringify(data));
+        try {
+          localStorage.setItem(GOOGLE_RATING_CACHE_KEY, JSON.stringify(data));
+        } catch (storageError) {
+          // Ignore storage errors (e.g. localStorage disabled / quota exceeded).
+        }
         renderRating(data);
       } catch (error) {
         console.error('Nie udało się pobrać oceny Google:', error);
