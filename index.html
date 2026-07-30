@@ -94,7 +94,19 @@
       font-size: 1.8em;
       line-height: 1.2em;
       margin: 20px 0px;      
-    }    
+    }
+
+    .heading-with-rating {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5em;
+      max-width: 38em;
+    }
+
+    .heading-with-rating h1 {
+      flex: 1;
+    }
     
     .bolder {
       font-weight: 500;
@@ -120,19 +132,45 @@
     #google-rating {
       display: inline-flex;
       align-items: center;
-      gap: 0.2em;
-      margin-left: 0.45em;
-      font-size: 0.6em;
-      font-weight: 400;
-      color: #555;
+      gap: 0.35em;
+      flex-shrink: 0;
+      padding: 0.55em 0.7em;
+      border-radius: 0.65em;
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      font-size: 1.05em;
+      font-weight: 500;
+      color: #444;
       white-space: nowrap;
-      vertical-align: middle;
       line-height: 1;
+    }
+
+    #google-rating:after {
+      display: none;
     }
 
     #google-rating .gr-stars {
       color: #fbbc04;
-      letter-spacing: -0.05em;
+      letter-spacing: -0.08em;
+      font-size: 1.1em;
+    }
+
+    #google-rating .gr-count {
+      color: #777;
+      font-size: 0.82em;
+      font-weight: 400;
+    }
+
+    @media (max-width: 700px) {
+      .heading-with-rating {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      #google-rating {
+        margin: -0.4em 0 0.8em;
+      }
     }
 
     /* fade-in effect of loading image */
@@ -179,11 +217,17 @@
 
 <body>
   <div class="container">
-    <div class="left-column">      
-      <h1>
-        Nazywam się Aleksander Figiel
-        <br/> i jestem <a style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer">trychologiem</a><span id="google-rating"></span>
-      </h1>
+    <div class="left-column">
+      <div class="heading-with-rating">
+        <h1>
+          Nazywam się Aleksander Figiel
+          <br/> i jestem <a style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer">trychologiem</a>
+        </h1>
+        <a id="google-rating" href="https://www.google.com/maps/search/?api=1&query_place_id=ChIJDc-ljHTLHkcR_eu7VTdGIvk" target="_blank" rel="noopener noreferrer" aria-label="Ocena Google 4,9 na 5">
+          <span class="gr-stars" aria-hidden="true">★★★★★</span>
+          <span class="gr-value">4,9</span>
+        </a>
+      </div>
       <p>    
         Identyfikuję choroby skóry głowy, 
         <br/> pomagam w leczeniu przyczyn wypadania włosów.
@@ -283,61 +327,70 @@
 
   </script>
   <script>
-    // Renders the Google rating badge next to "trychologiem"
-    function renderRating(d) {
-      var el = document.getElementById('google-rating');
-      if (!el || !d || !d.rating) return;
-      var full  = Math.round(d.rating);
-      var stars = '★'.repeat(full) + '☆'.repeat(5 - full);
-      var count = typeof d.count === 'number' ? d.count : 0;
-      el.setAttribute('aria-label', 'Ocena Google ' + d.rating.toFixed(1) + ' na 5, ' + count + ' opinii');
-      el.innerHTML =
-        '<span class="gr-stars" aria-hidden="true">' + stars + '</span>' +
-        d.rating.toFixed(1) +
-        ' <span>(' + count + ')</span>';
+    const GOOGLE_PLACE_ID = 'ChIJDc-ljHTLHkcR_eu7VTdGIvk';
+    const GOOGLE_RATING_CACHE_KEY = 'googleRating';
+    const GOOGLE_RATING_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+    function renderRating(data) {
+      const element = document.getElementById('google-rating');
+      if (!element || !data || typeof data.rating !== 'number') return;
+
+      const rating = data.rating.toFixed(1).replace('.', ',');
+      const count = typeof data.count === 'number' ? data.count : null;
+      const countMarkup = count === null ? '' : '<span class="gr-count">(' + count + ')</span>';
+
+      element.setAttribute(
+        'aria-label',
+        'Ocena Google ' + rating + ' na 5' + (count === null ? '' : ', ' + count + ' opinii')
+      );
+      element.innerHTML =
+        '<span class="gr-stars" aria-hidden="true">★★★★★</span>' +
+        '<span class="gr-value">' + rating + '</span>' +
+        countMarkup;
     }
 
-    // Fallback: if the Maps JS API never fires initGoogleRating (e.g. RefererNotAllowedMapError),
-    // still show whatever rating was cached from a previous successful load.
-    var _googleRatingFallbackTimer = setTimeout(function () {
-      var cached = localStorage.getItem('googleRating');
-      if (cached) {
-        try { renderRating(JSON.parse(cached)); } catch (e) {}
+    function readCachedRating() {
+      try {
+        const cached = JSON.parse(localStorage.getItem(GOOGLE_RATING_CACHE_KEY));
+        if (!cached || typeof cached.savedAt !== 'number') return null;
+        if (Date.now() - cached.savedAt > GOOGLE_RATING_CACHE_TTL) return null;
+        return cached;
+      } catch (error) {
+        return null;
       }
-    }, 4000);
+    }
 
-    // Called automatically by the Maps JS API after it loads
-    function initGoogleRating() {
-      clearTimeout(_googleRatingFallbackTimer);
-
-      // Serve from localStorage to avoid a redundant API round-trip
-      var cached = localStorage.getItem('googleRating');
+    async function initGoogleRating() {
+      const cached = readCachedRating();
       if (cached) {
-        try {
-          renderRating(JSON.parse(cached));
-        } catch (e) {}
+        renderRating(cached);
         return;
       }
 
-      // Use the legacy PlacesService (avoids the new v1/$rpc endpoint that may be blocked)
-      var service = new google.maps.places.PlacesService(document.createElement('div'));
-      service.getDetails(
-        { placeId: 'ChIJDc-ljHTLHkcR_eu7VTdGIvk', fields: ['rating', 'user_ratings_total'] },
-        function (place, status) {
-          if (status !== google.maps.places.PlacesServiceStatus.OK || !place || !place.rating) return;
-          var d = {
-            rating: place.rating,
-            count: typeof place.user_ratings_total === 'number' ? place.user_ratings_total : 0
-          };
-          localStorage.setItem('googleRating', JSON.stringify(d));
-          renderRating(d);
-        }
-      );
+      try {
+        const { Place } = await google.maps.importLibrary('places');
+        const place = new Place({ id: GOOGLE_PLACE_ID });
+
+        await place.fetchFields({ fields: ['rating', 'userRatingCount'] });
+
+        if (typeof place.rating !== 'number') return;
+
+        const data = {
+          rating: place.rating,
+          count: typeof place.userRatingCount === 'number' ? place.userRatingCount : null,
+          savedAt: Date.now()
+        };
+
+        localStorage.setItem(GOOGLE_RATING_CACHE_KEY, JSON.stringify(data));
+        renderRating(data);
+      } catch (error) {
+        console.error('Nie udało się pobrać oceny Google:', error);
+      }
     }
   </script>
-  <!-- Google Maps JS API – the key must have "Maps JavaScript API" and "Places API" enabled.
-       Restrict the key to your domain for security. -->
-  <script async defer
+  <!-- The API key must allow https://trycholog.pl/* and https://www.trycholog.pl/*
+       and have Maps JavaScript API plus Places API (New) enabled. -->
+  <script async
     src="https://maps.googleapis.com/maps/api/js?loading=async&key=AIzaSyDfrxjTEk9CYYJulZTd53BHQ5Y3CHX7Q_g&libraries=places&callback=initGoogleRating">
   </script>
 </body>
