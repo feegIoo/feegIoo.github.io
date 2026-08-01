@@ -104,6 +104,16 @@
       line-height: 1;
       vertical-align: middle;
       margin-top: 3px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(2px);
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    #google-rating.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
     }
 
     #google-rating:after { display: none; }
@@ -155,11 +165,7 @@
         <span class="profession-line">
           <span>i jestem</span>
           <a style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer">trychologiem</a>
-          <a id="google-rating" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer" aria-label="Ocena Google 4.9 na 5, 35 opinii">
-            <span class="gr-stars" aria-hidden="true">★★★★★</span>
-            <span class="gr-value">4.9</span>
-            <span class="gr-count">(35 opinii)</span>
-          </a>
+          <a id="google-rating" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer"></a>
         </span>
       </h1>
 
@@ -254,6 +260,10 @@
         '<span class="gr-stars" aria-hidden="true">' + stars + '</span>' +
         '<span class="gr-value">' + rating + '</span>' +
         (countText ? '<span class="gr-count">' + countText + '</span>' : '');
+
+      requestAnimationFrame(() => {
+        element.classList.add('is-visible');
+      });
     }
 
     function readCachedRating() {
