@@ -5,3 +5,5 @@ Disallow: /*.sh
 Disallow: /assets/
 Disallow: /pages/
 Disallow: /gmail/
+
+Sitemap: https://trycholog.pl/sitemap.xml
