@@ -159,32 +159,33 @@
   <script src="https://browser.sentry-cdn.com/8.26.0/bundle.tracing.replay.feedback.min.js" integrity="sha384-u3C514nxDqz0fD63HP7I6OLFjYG+rtx1pqptNYuXVGR1pUtVswV/6C0dWYs9PvE9" crossorigin="anonymous"></script>
   <script type="text/javascript" src="lib/sentry-config.js"></script>
   <script>initSentry(true)</script>
+  <script type="text/javascript" src="translations.js"></script>
 </head>
 <body>
   <div class="container">
     <div class="left-column">
       <h1>
-        Nazywam się Aleksander Figiel
+        <span id="translation-name">Nazywam się Aleksander Figiel</span>
         <br />
         <span class="profession-line">
-          <span>i jestem</span>
-          <a style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer">trychologiem</a>
+          <span id="translation-and-i-am">i jestem</span>
+          <a id="translation-trichologist" style="font-weight:500;" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer">trychologiem</a>
           <a id="google-rating" href="https://goo.gl/maps/y1DTfk68qPtopfAW8" target="_blank" rel="noopener noreferrer"></a>
         </span>
       </h1>
 
-      <p>Identyfikuję choroby skóry głowy,<br /> pomagam w leczeniu przyczyn wypadania włosów.</p>
+      <p><span id="translation-intro-1">Identyfikuję choroby skóry głowy,</span><br /> <span id="translation-intro-2">pomagam w leczeniu przyczyn wypadania włosów.</span></p>
       <p>
-        <a class="hovered" href="" style="color:#b63e3e" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/trycholog/konsultacja'});return false;">Umów Konsultację Trychologiczną</a>
-        <span class="bolder">(30 min + zalecenia na email, 200 zł)</span> w Warszawie (Młociny) lub online.<br />
-        Telefon: <a href="tel:791421067">📞 791 421 067</a>
+        <a id="translation-book-consultation" class="hovered" href="" style="color:#b63e3e" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/trycholog/konsultacja'});return false;">Umów Konsultację Trychologiczną</a>
+        <span id="translation-consultation-details" class="bolder">(30 min + zalecenia na email, 200 zł)</span><span id="translation-consultation-location"> w Warszawie (Młociny) lub online.</span><br />
+        <span id="translation-phone">Telefon: </span><a href="tel:791421067">📞 791 421 067</a>
       </p>
-      <p>Po konsultacji, <span class="bolder">wysyłam na e-mail indywidualny plan</span>: sugerowane leki i kontakt do <a href="/czy-trycholog-jest-lekarzem">dermatologów "od włosów"</a>, strategia na przeszczep włosów (najlepsze kliniki, ilość graftów), uzupełnianie diety suplementami, zabiegi i "włosing".</p>
-      <p>Pokazuję, jak można odbudować włosy i utrzymać <br /> je na długie lata, bez zbędnych wydatków.</p>
-      <p>Edukuję - bazując na wiedzy ekspertów światowej klasy, wynikach badań naukowych i osobistym doświadczeniu.</p>
+      <p><span id="translation-after-consultation">Po konsultacji, </span><span id="translation-individual-plan" class="bolder">wysyłam na e-mail indywidualny plan</span><span id="translation-plan-before-dermatologists">: sugerowane leki i kontakt do </span><a id="translation-dermatologists" href="/czy-trycholog-jest-lekarzem">dermatologów "od włosów"</a><span id="translation-plan-after-dermatologists">, strategia na przeszczep włosów (najlepsze kliniki, ilość graftów), uzupełnianie diety suplementami, zabiegi i "włosing".</span></p>
+      <p><span id="translation-rebuild-1">Pokazuję, jak można odbudować włosy i utrzymać</span> <br /> <span id="translation-rebuild-2">je na długie lata, bez zbędnych wydatków.</span></p>
+      <p id="translation-education">Edukuję - bazując na wiedzy ekspertów światowej klasy, wynikach badań naukowych i osobistym doświadczeniu.</p>
       <p>
-        <span class="bolder">Mój bezpłatny poradnik-instrukcja w PDF:</span>
-        <a href="/leczenie-lysienia-androgenowego/Leczenie%20%C5%82ysienia%20androgenowego%20u%20m%C4%99%C5%BCczyzn%20-%20poradnik.pdf" target="_blank" rel="noopener noreferrer" id="link-to-pdf">Leczenie łysienia androgenowego <span>u mężczyzn</span></a>
+        <span id="translation-guide-label" class="bolder">Mój bezpłatny poradnik-instrukcja w PDF:</span>
+        <a href="/leczenie-lysienia-androgenowego/Leczenie%20%C5%82ysienia%20androgenowego%20u%20m%C4%99%C5%BCczyzn%20-%20poradnik.pdf" target="_blank" rel="noopener noreferrer" id="link-to-pdf"><span id="translation-guide-title">Leczenie łysienia androgenowego </span><span id="translation-guide-men">u mężczyzn</span></a>
       </p>
     </div>
 
@@ -241,6 +242,7 @@
     const GOOGLE_RATING_CACHE_TTL = 24 * 60 * 60 * 1000;
 
     function reviewWord(count) {
+      if (window.isEnglishTranslationActive) return count === 1 ? 'review' : 'reviews';
       if (count === 1) return 'opinia';
       const lastTwo = count % 100;
       const last = count % 10;
@@ -258,8 +260,11 @@
       const fullStars = Math.max(0, Math.min(5, Math.round(data.rating)));
       const stars = '★'.repeat(fullStars) + '☆'.repeat(5 - fullStars);
       const countText = count === null ? '' : '(' + count + ' ' + reviewWord(count) + ')';
+      const ariaLabel = window.isEnglishTranslationActive
+        ? 'Google rating ' + rating + ' out of 5' + (count === null ? '' : ', ' + count + ' ' + reviewWord(count))
+        : 'Ocena Google ' + rating + ' na 5' + (count === null ? '' : ', ' + count + ' ' + reviewWord(count));
 
-      element.setAttribute('aria-label', 'Ocena Google ' + rating + ' na 5' + (count === null ? '' : ', ' + count + ' ' + reviewWord(count)));
+      element.setAttribute('aria-label', ariaLabel);
       element.innerHTML =
         '<span class="gr-stars" aria-hidden="true">' + stars + '</span>' +
         '<span class="gr-value">' + rating + '</span>' +
