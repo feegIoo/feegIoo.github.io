@@ -21,11 +21,6 @@ const translations = Object.freeze({
   'translation-guide-men': 'in men'
 });
 
-const pageTranslations = Object.freeze({
-  title: 'trycholog.pl | Aleksander Figiel | Warsaw',
-  description: 'I identify androgenetic and telogen hair loss, plan treatment based on scientific research, and advise how to achieve a successful hair transplant. Consultation in Warsaw or online.'
-});
-
 function getPrimaryBrowserLanguage() {
   const languages = Array.isArray(navigator.languages) && navigator.languages.length
     ? navigator.languages
@@ -34,8 +29,12 @@ function getPrimaryBrowserLanguage() {
   return String(languages[0] || 'pl').trim().toLowerCase().split('-')[0];
 }
 
+function isGoogleCrawler() {
+  return /Googlebot|Google-InspectionTool/i.test(navigator.userAgent || '');
+}
+
 function shouldTranslateToEnglish() {
-  return getPrimaryBrowserLanguage() !== 'pl';
+  return !isGoogleCrawler() && getPrimaryBrowserLanguage() !== 'pl';
 }
 
 function applyEnglishTranslations() {
@@ -45,10 +44,6 @@ function applyEnglishTranslations() {
   });
 
   document.documentElement.lang = 'en';
-  document.title = pageTranslations.title;
-
-  const description = document.querySelector('meta[name="description"]');
-  if (description) description.setAttribute('content', pageTranslations.description);
 }
 
 window.isEnglishTranslationActive = shouldTranslateToEnglish();
